@@ -7,7 +7,7 @@ export default function MainPage() {
  return (
   <Router>  
   <Routes>
-    <Route path="/record" element={<ChessRecord />} />
+    <Route path="/" element={<ChessRecord />} />
     <Route path="/play" element={<ChessPlay />} />
     <Route path="/testws" element={<TestWS />} />
   </Routes>
