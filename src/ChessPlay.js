@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
-import ReloadableGif from "./ReloadableGif";
+// import ReloadableGif from "./ReloadableGif";
+import GifPlayer from "react-gif-player";
 
 
 
@@ -113,8 +114,9 @@ export default function ChessRecord() {
       }}>
         <h2>Get suggestions</h2>
         <Chessboard position={game.fen()} onPieceDrop={onDrop} />
-
-      <div style={{margin: 50}}><ReloadableGif /></div>
+        <br></br>
+        <br></br>
+        <GifPlayer gif="1.gif" still="1.png" />
       </div> 
      )
 }
