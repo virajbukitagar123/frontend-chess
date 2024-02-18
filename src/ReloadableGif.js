@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-export default function ReloadableGif() {
-    const [gif] = useState('1.gif');
-    const [loaded, setLoaded] = useState('1.gif');
+export default function ReloadableGif(props) {
+    const URL = "http://localhost:8888/"
+    const [gif] = useState(URL + props.opening + "/" + props.moveNum);
+    const [loaded, setLoaded] = useState(URL + props.opening + "/" + props.moveNum);
   
     const reloadGif = () => {
       setLoaded('');
@@ -12,8 +13,6 @@ export default function ReloadableGif() {
     };
   
     return (
-      <div>
-        <img style={{height: 200, width: 200}} src={loaded} alt="Gif" onClick={reloadGif} />
-      </div>
+        <img src={loaded} alt="No Gif Found" onClick={reloadGif} />
     );
   }

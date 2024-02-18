@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
-// import ReloadableGif from "./ReloadableGif";
+import ReloadableGif from "./ReloadableGif";
 // import GifPlayer from "react-gif-player";
 import {
   GridItem, Grid, Container, Box, SimpleGrid, Spinner
@@ -12,8 +12,8 @@ import {
 export default function ChessRecord() {
   const [game, setGame] = useState(new Chess());
   const [data, setData] = useState([]);
-  const [curFen, setCurFen] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [isLoading, setIsLoading] = useState(true);
+  const [moveNum, setMoveNum] = useState(1);
 
   function makeAMove(move) {
     const gameCopy = { ...game };
@@ -33,7 +33,7 @@ export default function ChessRecord() {
 
     // illegal move
     if (move === null) return false;
-    setCurFen(game.fen());
+    setMoveNum(moveNum + 1);
     return true;
   }
 
@@ -61,9 +61,9 @@ export default function ChessRecord() {
       }
     };
 
-    fetchData(curFen);
+    fetchData(game.fen());
 
-  }, [curFen, data]);
+  }, [game, data]);
 
   return (
     <Grid templateAreas={`"nav main"`}
@@ -83,7 +83,7 @@ export default function ChessRecord() {
       </GridItem>
       <GridItem pl='2' area={'main'}>
         <Container padding={'15px 5px 15px 5px'} margin={'20px'} w='630px'>
-          <SimpleGrid columns={2} spacing={5}>
+          <SimpleGrid columns={2} spacing={10}>
             {isLoading ? (
               <Spinner size="lg" />
             ) : (
@@ -92,6 +92,7 @@ export default function ChessRecord() {
                 for (let i = 0; i < data.length; i++) {
                   boxes.push(
                     <Box key={i} height='300px'>
+                      <ReloadableGif opening = {data[i]} moveNum = {moveNum} />
                       <strong>{data[i]}</strong>
                     </Box>
                   );

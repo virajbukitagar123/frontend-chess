@@ -8,11 +8,10 @@ export default function NavBar() {
         justify="space-between"
         padding="1rem"
         bg="blue.500"
-        color="white"
-    >
+        color="white">
         <Box>
             <Text fontSize="xl" fontWeight="bold">
-               Chess Openings
+                Chess Openings
             </Text>
         </Box>
         <Box>
