@@ -5,14 +5,11 @@ import { over } from "stompjs";
 import SockJS from 'sockjs-client'
 import {
   Button, ButtonGroup, Input, VStack, Wrap, WrapItem,
-  FormControl, Text, GridItem, Grid, Container, Box, Heading
+  FormControl, Text, GridItem, Grid, Container, Box
 } from '@chakra-ui/react'
-
-
 
 var stompClient = null;
 const SOCKET_URL = 'http://localhost:8080/ws-message';
-
 
 export default function ChessRecord() {
   const [game, setGame] = useState(new Chess());
@@ -114,45 +111,39 @@ export default function ChessRecord() {
   }
 
   return (
-    <Grid
-      templateAreas={`"header"
-                "main"`}
-      gridTemplateRows={'75px auto'}
+    <Grid templateAreas={`"main"`} gridTemplateRows={'75px auto'}
       gridTemplateColumns={'100vw'}
-      h='100vh'
-      gap='1'
-      color='blackAlpha.700'
-      fontWeight='bold'>
-      <GridItem pl='2' area={'header'}>
-        <Heading>Record Chess Page</Heading>
-      </GridItem>
+      h='100vh' gap='1' color='blackAlpha.700' fontWeight='bold'>
       <GridItem pl='2' area={'main'}>
         <VStack
           spacing={1}
           align='stretch'>
-          <Box h='20px'>
-            <FormControl onSubmit={handleSubmit}>
-              <Wrap spacing='15px' padding={'5px'} justify={'center'}>
-                <WrapItem>
-                  <Box>
-                    <Input type="text" id="Opening Name" name="title"
-                      placeholder='Opening Name' size={'sm'} rounded={'full'} width={'350px'} value={title || ""} onChange={handleChange}></Input>
-                  </Box>
-                </WrapItem>
-                <WrapItem>
-                  <Box>
-                    <ButtonGroup variant='outline' spacing='2' size={'sm'}>
-                      <Button type='submit' colorScheme='blue' variant='solid' rounded={'full'}>Submit</Button>
-                      <Button colorScheme="red" onClick={handleStop} variant='solid' rounded={'full'}>Stop</Button>
-                    </ButtonGroup>
-                  </Box>
-                </WrapItem>
-              </Wrap>
-            </FormControl>
+          <Box h='20px' marginTop={'20px'}>
+            <form onSubmit={handleSubmit}>
+              <FormControl>
+                <Wrap spacing='15px' padding={'5px'} justify={'center'}>
+                  <WrapItem>
+                    <Box>
+                      <Input type="text" id="Opening Name" name="title"
+                        placeholder='Opening Name' size={'sm'} rounded={'full'} width={'350px'} value={title || ""} onChange={handleChange}></Input>
+                    </Box>
+                  </WrapItem>
+                  <WrapItem>
+                    <Box>
+                      <ButtonGroup variant='outline' spacing='2' size={'sm'}>
+                        <Button type='submit' colorScheme='blue' variant='solid' rounded={'full'}>Submit</Button>
+                        <Button colorScheme="red" onClick={handleStop} variant='solid' rounded={'full'}>Stop</Button>
+                      </ButtonGroup>
+                    </Box>
+                  </WrapItem>
+                </Wrap>
+              </FormControl>
+            </form>
           </Box>
           <Container h='70vh' maxWidth={'100vw'} centerContent paddingTop={'30px'}>
             <Container h={'750px'} w={'750px'} centerContent>
-              <Chessboard position={game.fen()} onPieceDrop={onDrop} /></Container>
+              <Chessboard position={game.fen()} onPieceDrop={onDrop} />
+            </Container>
           </Container>
           <Container h='40px' centerContent>
             <Text>{message}</Text>

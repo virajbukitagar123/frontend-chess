@@ -1,62 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
 // import ReloadableGif from "./ReloadableGif";
-import GifPlayer from "react-gif-player";
+// import GifPlayer from "react-gif-player";
+import {
+  GridItem, Grid, Container, Box, SimpleGrid, Spinner
+} from '@chakra-ui/react'
 
-
-
-// var stompClient = null;
-// const SOCKET_URL = 'http://localhost:8080/ws-message';
 
 
 export default function ChessRecord() {
   const [game, setGame] = useState(new Chess());
-  //const [message, setMessage] = useState('You server message here.');
-  //const [title, setTitle] = useState("");
-
-  // let sendMoveToServer = (fromSq, prevFen, toSq, newFen) => {
-  //   if(stompClient) {
-  //       let messageToSend = {
-  //           prevPos: prevFen,
-  //           newPos: newFen, 
-  //           from: fromSq,
-  //           to: toSq
-  //       }
-  //       stompClient.send("/app/sendChessMove", {}, JSON.stringify(messageToSend))
-  //   }
-  // }
-
-  // let sendMessageToServer = (msgPayload) => {
-  //   if(stompClient) {
-  //       let messageToSend = {
-  //           message: msgPayload
-  //       }
-  //       stompClient.send("/app/sendMessage", {}, JSON.stringify(messageToSend))
-  //   }
-  // }
-
-  // let onConnected = () => {
-  //     stompClient.subscribe('/topic/message', onMessageReceived);
-  //     sendMessageToServer("Start-" + title);
-  //     console.log("Connected!!")
-  // }
-
-  // let onMessageReceived = (payload) => {
-  //     let payloadData = JSON.parse(payload.body);
-  //     console.log(payloadData.message);
-  //     setMessage(payloadData.message);
-  // }
-
-  // let onError = (err) => {
-  //     console.log(err)
-  // }
-
-//   function startSocket() {
-//     let Sock = new SockJS(SOCKET_URL);
-//     stompClient = over(Sock);
-//     stompClient.connect({}, onConnected, onError);
-// }
+  const [data, setData] = useState([]);
+  const [curFen, setCurFen] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  const [isLoading, setIsLoading] = useState(true);
 
   function makeAMove(move) {
     const gameCopy = { ...game };
@@ -64,59 +21,87 @@ export default function ChessRecord() {
     setGame(gameCopy);
     console.log(move);
     console.log(gameCopy);
-    return result; // null if the move was illegal, the move object if the move was legal
+    return result;
   }
 
   function onDrop(sourceSquare, targetSquare) {
     const move = makeAMove({
       from: sourceSquare,
       to: targetSquare,
-      promotion: "q", // always promote to a queen for example simplicity
+      promotion: "q",
     });
 
     // illegal move
     if (move === null) return false;
-    // sendMoveToServer(sourceSquare, prevFen, targetSquare, newFen);
+    setCurFen(game.fen());
     return true;
   }
 
-//   function handleSubmit(e) {
-//     e.preventDefault();
-//     console.log("You clicked on Submit")
-//     console.log("Value was " + title);
-//     startSocket();
-// }
+  useMemo(() => {
+    const fetchData = async (fen) => {
+      try {
+        const response = await fetch('http://localhost:8080/getOpenings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "message": fen }),
+        });
 
-// function handleChange(e) {
-//     setTitle(e.target.value)
-//     console.log(title)
-// }
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
 
-// function safeGameMutate(modify) {
-//   setGame((g) => {
-//     const update = { ...g };
-//     modify(update);
-//     return update;
-//   });
-// }
+        setData(await response.json());
+        setIsLoading(false);
+        console.log('Data:', data);
+        // Do something with the data
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-// function handleStop(e) {
-//   sendMessageToServer("Stop")
-//   safeGameMutate(game => {game.reset()});
-//   setTitle("")
-// }
+    fetchData(curFen);
+
+  }, [curFen, data]);
 
   return (
-      <div style={{
-        height: 500,
-        width: 500,
-        margin: 50
-      }}>
-        <h2>Get suggestions</h2>
-        <Chessboard position={game.fen()} onPieceDrop={onDrop} />
-        <br></br>
-        <br></br>
-        <GifPlayer gif="1.gif" still="1.png" />
-      </div> 
-     )
+    <Grid templateAreas={`"nav main"`}
+      gridTemplateRows={'100vh'}
+      gridTemplateColumns={'45vw 55vw'}
+      w='100vw'
+      gap='1'
+      color='blackAlpha.700'
+      fontWeight='bold'>
+
+      <GridItem pl='2' area={'nav'}>
+        <Container h='750px' maxWidth={'100vw'} centerContent paddingTop={'30px'}>
+          <Container h={'750px'} w={'750px'} centerContent>
+            <Chessboard position={game.fen()} onPieceDrop={onDrop} />
+          </Container>
+        </Container>
+      </GridItem>
+      <GridItem pl='2' area={'main'}>
+        <Container padding={'15px 5px 15px 5px'} margin={'20px'} w='630px'>
+          <SimpleGrid columns={2} spacing={5}>
+            {isLoading ? (
+              <Spinner size="lg" />
+            ) : (
+              (() => {
+                const boxes = [];
+                for (let i = 0; i < data.length; i++) {
+                  boxes.push(
+                    <Box key={i} height='300px'>
+                      <strong>{data[i]}</strong>
+                    </Box>
+                  );
+                }
+                return boxes;
+              })()
+            )}
+          </SimpleGrid>
+        </Container>
+      </GridItem>
+    </Grid>
+  )
 }
