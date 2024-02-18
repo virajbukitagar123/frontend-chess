@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
 import ReloadableGif from "./ReloadableGif";
@@ -9,10 +9,11 @@ import {
 
 
 
-export default function ChessRecord() {
+export default function ChessPlay() {
   const [game, setGame] = useState(new Chess());
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [curFen, setCurFen] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
   const [moveNum, setMoveNum] = useState(1);
 
   function makeAMove(move) {
@@ -24,7 +25,31 @@ export default function ChessRecord() {
     return result;
   }
 
+  const fetchData = async (fen) => {
+    try {
+      const response = await fetch('http://localhost:8080/getOpenings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "message": fen }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      setData(await response.json());
+      setIsLoading(false);
+      console.log('Data:', data);
+      // Do something with the data
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   function onDrop(sourceSquare, targetSquare) {
+    setIsLoading(true);
     const move = makeAMove({
       from: sourceSquare,
       to: targetSquare,
@@ -34,36 +59,20 @@ export default function ChessRecord() {
     // illegal move
     if (move === null) return false;
     setMoveNum(moveNum + 1);
+    console.log("Current Fen: ", game.fen())
+    setCurFen(game.fen());
+    fetchData(game.fen());
+    console.log('Data after fetch: ', data);
     return true;
   }
 
-  useMemo(() => {
-    const fetchData = async (fen) => {
-      try {
-        const response = await fetch('http://localhost:8080/getOpenings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ "message": fen }),
-        });
+  // To run it only one time once the page is loaded.
+  useEffect(() => {
+    if (data.length === 0 && moveNum === 1) {
+      fetchData(curFen);
+    }
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        setData(await response.json());
-        setIsLoading(false);
-        console.log('Data:', data);
-        // Do something with the data
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData(game.fen());
-
-  }, [game, data]);
+  }, []);
 
   return (
     <Grid templateAreas={`"nav main"`}
@@ -90,13 +99,15 @@ export default function ChessRecord() {
               (() => {
                 const boxes = [];
                 for (let i = 0; i < data.length; i++) {
+                  console.log("Opening Name: " + data[i]);
                   boxes.push(
                     <Box key={i} height='300px'>
-                      <ReloadableGif opening = {data[i]} moveNum = {moveNum} />
+                      <ReloadableGif opening={data[i]} moveNum={moveNum} />
                       <strong>{data[i]}</strong>
                     </Box>
                   );
                 }
+                console.log("Boxes: " + boxes);
                 return boxes;
               })()
             )}
